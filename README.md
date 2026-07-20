@@ -20,7 +20,7 @@ Figma MCP tools.
 ### 1. Add the marketplace (once, if you haven't already)
 
 ```
-/plugin marketplace add appsadmin-design/ono-plugin-marketplace
+/plugin marketplace add OnOAppsDev/ono-plugin-marketplace
 ```
 
 ### 2. Install the plugin
