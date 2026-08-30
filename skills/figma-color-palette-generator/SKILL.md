@@ -27,12 +27,13 @@ Only once steps 1–5 pass, continue to Step 1 below.
 
 ## Step 1 — Collect inputs
 
-Ask the user for exactly **two things**:
+Ask the user for these inputs:
 
-1. **Brand color** — hex value (e.g. `#3B6FE8`)
-2. **Figma file URL** — where to write the variables and frame
+1. **Brand color** (required) — hex value (e.g. `#3B6FE8`)
+2. **Figma file URL** (required) — where to write the variables and frame
+3. **Secondary color** (optional) — hex value (e.g. `#E83B8A`). If provided, the secondary scale uses this exact color's hue and saturation instead of the auto-generated split-complementary (+210°). This produces a more accurate palette when the brand already has a defined secondary color.
 
-Validate the hex is a 6-digit hex string before proceeding.
+Validate that all provided hex values are 6-digit hex strings before proceeding. If the user doesn't mention a secondary color, don't prompt for it — just proceed with auto-generation.
 
 ---
 
@@ -41,11 +42,16 @@ Validate the hex is a 6-digit hex string before proceeding.
 Run the bundled script:
 
 ```bash
+# Without secondary color (auto-generates split-complementary):
 node "${CLAUDE_PLUGIN_ROOT}/skills/figma-color-palette-generator/scripts/generate-palette.js" "#HEX_FROM_USER"
+
+# With optional secondary color:
+node "${CLAUDE_PLUGIN_ROOT}/skills/figma-color-palette-generator/scripts/generate-palette.js" "#HEX_FROM_USER" "#SECONDARY_HEX"
 ```
 
 `palette` contains 7 scales: `primary`, `secondary`, `neutral`, `success`, `warning`, `error`, `info`.
 Each scale has 11 stops: `50 100 200 300 400 500 600 700 800 900 950`.
+`meta.secondarySource` indicates whether the secondary was `"user-provided"` or `"auto-generated (+210°)"`.
 
 Save the full JSON — needed in Steps 3 and 4.
 
@@ -386,7 +392,8 @@ Use `figma.createAutoLayout()` for all containers. No absolute `x`/`y` inside co
 |----------|--------|
 | Variables only — no paint styles | Variables support modes (Light/Dark), aliases, and dev token export. Paint styles don't. |
 | 11-stop scale (50–950) | Matches Tailwind/Radix convention — enough range for accessible contrast |
-| Secondary at +210° | Split-complementary: harmonious but distinct, avoids red/green conflict |
+| Secondary at +210° (default) | Split-complementary: harmonious but distinct, avoids red/green conflict |
+| Optional secondary hex input | When the brand has a defined secondary color, using it directly produces a more accurate palette than the auto-generated hue shift |
 | Warm/cool neutrals | Slightly tinted (from primary hue) feels intentional vs off-the-shelf gray |
 | Semantic saturation adapts to primary | Prevents semantic colors feeling disconnected from brand |
 | Scopes set explicitly | Prevents polluting every property picker — keeps Figma usable |

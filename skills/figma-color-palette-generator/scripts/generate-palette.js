@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Usage: node generate-palette.js "#3B6FE8"
+// Usage: node generate-palette.js "#3B6FE8" ["#E83B8A"]
 // Output: JSON with all palette values
+// Second argument is optional — a custom secondary brand color hex
 
 function hexToHsl(hex) {
   const clean = hex.replace('#', '');
@@ -73,17 +74,27 @@ function generateScale(hue, peakSaturation) {
 }
 
 const inputHex = process.argv[2];
+const secondaryHex = process.argv[3] || null;
+
 if (!inputHex) {
-  console.error('Usage: node generate-palette.js "#3B6FE8"');
+  console.error('Usage: node generate-palette.js "#3B6FE8" ["#E83B8A"]');
+  console.error('  Second argument is optional — a custom secondary brand color hex');
   process.exit(1);
 }
 
 const [h, s] = hexToHsl(inputHex);
 
-// Secondary: split-complementary (+210°) — harmonious but distinct
-// Adjust saturation slightly lower to avoid competition with primary
-const secondaryHue = (h + 210) % 360;
-const secondaryS = Math.min(s * 0.88, 85);
+let secondaryHue, secondaryS;
+if (secondaryHex) {
+  // Use the user-supplied secondary color for a more accurate palette
+  const [sh, ss] = hexToHsl(secondaryHex);
+  secondaryHue = sh;
+  secondaryS = ss;
+} else {
+  // Fallback: split-complementary (+210°) — harmonious but distinct
+  secondaryHue = (h + 210) % 360;
+  secondaryS = Math.min(s * 0.88, 85);
+}
 
 // Neutral: use primary hue with very low saturation for warm/cool neutrals
 const neutralS = Math.min(s * 0.12, 8);
@@ -107,8 +118,9 @@ const meta = {
   inputHex,
   inputHue: Math.round(h),
   inputSaturation: Math.round(s),
+  secondaryHex: secondaryHex || null,
   secondaryHue: Math.round(secondaryHue),
-  // Recommended 500-stop as "base" reference
+  secondarySource: secondaryHex ? 'user-provided' : 'auto-generated (+210°)',
   primaryBase: palette.primary[500],
   secondaryBase: palette.secondary[500],
 };
